@@ -8,34 +8,38 @@ blueprint:
   input:
     home_sensor:
       name: Home Sensor
-      description: >
-        An entity (typically a sensor) that reflects the number of persons at home.
+      description: An entity (typically a sensor) that reflects the number of persons at home.
       selector:
         entity:
           domain: sensor
-    trigger_thresholds:
-      name: Trigger Thresholds
-      description: Numeric thresholds for triggering events.
+    all_left_threshold:
+      name: All Persons Left Threshold
+      description: Trigger when the sensor is below this value.
+      default: 1
       selector:
-        object:
-          properties:
-            all_left:
-              name: All Persons Left Threshold
-              description: Trigger when the sensor is below this value.
-              default: 1
-              type: number
-            two_left:
-              name: Two Persons Left Threshold
-              default: 2
-              type: number
-            two_arrived:
-              name: Two Persons Arrived Threshold
-              default: 1
-              type: number
-            one_arrived:
-              name: One Person Arrived Threshold
-              default: 0
-              type: number
+        number:
+          min: 0
+    two_left_threshold:
+      name: Two Persons Left Threshold
+      description: Trigger when the sensor is below this value.
+      default: 2
+      selector:
+        number:
+          min: 0
+    two_arrived_threshold:
+      name: Two Persons Arrived Threshold
+      description: Trigger when the sensor is above this value.
+      default: 1
+      selector:
+        number:
+          min: 0
+    one_arrived_threshold:
+      name: One Person Arrived Threshold
+      description: Trigger when the sensor is above this value.
+      default: 0
+      selector:
+        number:
+          min: 0
     person_to_check:
       name: Person to Check (Two Left Condition)
       description: >
@@ -117,27 +121,26 @@ blueprint:
             domain: light
     sunset_offset:
       name: Sunset Offset
-      description: >
-        Time offset for the sunset condition.
+      description: Time offset for the sunset condition.
       default: "-00:30"
       selector:
-        text:
+        text: {}
 trigger:
   - platform: numeric_state
     entity_id: !input home_sensor
-    below: !input.trigger_thresholds.all_left
+    below: !input all_left_threshold
     id: all_left
   - platform: numeric_state
     entity_id: !input home_sensor
-    below: !input.trigger_thresholds.two_left
+    below: !input two_left_threshold
     id: two_left
   - platform: numeric_state
     entity_id: !input home_sensor
-    above: !input.trigger_thresholds.two_arrived
+    above: !input two_arrived_threshold
     id: two_arrived
   - platform: numeric_state
     entity_id: !input home_sensor
-    above: !input.trigger_thresholds.one_arrived
+    above: !input one_arrived_threshold
     id: one_arrived
 mode: parallel
 max: 10
@@ -153,45 +156,45 @@ action:
                 state: "not_home"
         sequence:
           - service: switch.turn_off
-            target: !input.climate_two_left
+            target: !input climate_two_left
       - conditions:
           - condition: numeric_state
             entity_id: !input home_sensor
-            below: !input.trigger_thresholds.all_left
+            below: !input all_left_threshold
         sequence:
           - service: light.turn_off
-            target: !input.lights_all_off
+            target: !input lights_all_off
           - service: switch.turn_off
-            target: !input.climate_all_off
+            target: !input climate_all_off
       - conditions:
           - condition: trigger
             id: two_arrived
         sequence:
           - service: switch.turn_off
-            target: !input.climate_two_arrived
+            target: !input climate_two_arrived
       - conditions:
           - condition: trigger
             id: one_arrived
         sequence:
           - service: switch.turn_off
-            target: !input.climate_one_arrived
+            target: !input climate_one_arrived
           - if:
               - condition: or
                 conditions:
                   - condition: state
-                    entity_id: !input.person_a
+                    entity_id: !input person_a
                     state: "home"
                   - condition: state
-                    entity_id: !input.person_b
+                    entity_id: !input person_b
                     state: "home"
             then:
               - service: switch.turn_off
-                target: !input.switch_away_mode
+                target: !input switch_away_mode
           - if:
               - condition: sun
                 after: sunset
                 before: sunrise
-                after_offset: !input.sunset_offset
+                after_offset: !input sunset_offset
             then:
               - service: light.turn_on
-                target: !input.night_lights
+                target: !input night_lights
