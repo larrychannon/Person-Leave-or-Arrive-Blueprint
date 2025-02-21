@@ -19,6 +19,7 @@ blueprint:
       selector:
         number:
           min: 0
+          max: 10
     two_left_threshold:
       name: Two Persons Left Threshold
       description: Trigger when the sensor is below this value.
@@ -26,6 +27,7 @@ blueprint:
       selector:
         number:
           min: 0
+          max: 10
     two_arrived_threshold:
       name: Two Persons Arrived Threshold
       description: Trigger when the sensor is above this value.
@@ -33,6 +35,7 @@ blueprint:
       selector:
         number:
           min: 0
+          max: 10
     one_arrived_threshold:
       name: One Person Arrived Threshold
       description: Trigger when the sensor is above this value.
@@ -40,6 +43,7 @@ blueprint:
       selector:
         number:
           min: 0
+          max: 10
     person_to_check:
       name: Person to Check (Two Left Condition)
       description: >
